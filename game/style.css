@@ -1,0 +1,28 @@
+/* Emberlight page shell: the arena fills the window, night-black around it. */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #070313;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+canvas#game {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+  background: #0b0620;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}

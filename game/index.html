@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emberlight — hold the last flame</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="game" width="960" height="540" aria-label="Emberlight game arena"></canvas>
+<script type="module">
+import { createGame } from './src/main.js';
+import { stageShot } from './src/shots.js';
+
+const canvas = document.getElementById('game');
+const game = createGame(canvas);
+const params = new URLSearchParams(location.search);
+const shot = params.get('shot');
+
+if (shot) {
+  // A screenshot scene: stage it deterministically, draw one frame, stop.
+  const finalScreen = stageShot(game, shot, Number(params.get('seed') ?? 1));
+  game.draw();
+  document.title = `shot:${shot}:${finalScreen}`;
+  const s = game.state;
+  document.body.dataset.debug = JSON.stringify({
+    screen: s.screen,
+    wave: s.wave,
+    runTime: Math.round(s.runTime),
+    score: s.score,
+    enemies: s.enemies.map((e) => [e.kind, Math.round(e.x), Math.round(e.y), Math.round(e.spawnTimer * 100) / 100]),
+    bolts: s.bolts.length,
+    embers: s.embers.length,
+    queued: s.spawnQueue.length,
+  });
+  window.__shotDone = true;
+} else {
+  window.addEventListener('pointerdown', () => game.audio.unlock());
+  window.addEventListener('keydown', () => game.audio.unlock());
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    game.update(dt);
+    game.draw();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+</script>
+</body>
+</html>

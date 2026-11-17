@@ -310,27 +310,32 @@ export function drawPlayer(ctx, state) {
 export function drawHud(ctx, state) {
   const player = state.player;
   ctx.save();
-  // Health bar, top left.
+  // Health bar, top left. The FLAME label sits beside the bar, inside the
+  // arena frame: it used to sit on the frame's top edge (baseline
+  // ARENA.wall + 4), so the glowing border struck through the letters and
+  // the F touched the left border. Now label and bar share one row, both
+  // clear of the frame's glow (which reaches to ARENA.wall + 4.5).
   ctx.textAlign = 'left';
   ctx.font = `700 12px ${FONT}`;
   ctx.fillStyle = COLORS.dimText;
-  ctx.fillText('FLAME', ARENA.wall + 2, ARENA.wall - 8 + 12);
+  const hpX = ARENA.wall + 86;
+  ctx.fillText('FLAME', ARENA.wall + 10, ARENA.wall + 13);
   const hpW = 210;
   const hpFrac = Math.max(0, player.hp / player.maxHp);
   ctx.fillStyle = 'rgba(6, 2, 16, 0.72)';
-  roundRect(ctx, ARENA.wall + 48, ARENA.wall + 2, hpW, 13, 6);
+  roundRect(ctx, hpX, ARENA.wall + 2, hpW, 13, 6);
   ctx.fill();
-  const hpGrad = ctx.createLinearGradient(ARENA.wall + 48, 0, ARENA.wall + 48 + hpW, 0);
+  const hpGrad = ctx.createLinearGradient(hpX, 0, hpX + hpW, 0);
   hpGrad.addColorStop(0, hpFrac > 0.3 ? '#ffb347' : '#ff5a5a');
   hpGrad.addColorStop(1, hpFrac > 0.3 ? '#ff7847' : '#ff2e63');
   ctx.fillStyle = hpGrad;
   if (hpFrac > 0) {
-    roundRect(ctx, ARENA.wall + 48, ARENA.wall + 2, hpW * hpFrac, 13, 6);
+    roundRect(ctx, hpX, ARENA.wall + 2, hpW * hpFrac, 13, 6);
     ctx.fill();
   }
   ctx.fillStyle = COLORS.text;
   ctx.font = `700 11px ${FONT}`;
-  ctx.fillText(`${Math.ceil(player.hp)} / ${player.maxHp}`, ARENA.wall + 56, ARENA.wall + 12.5);
+  ctx.fillText(`${Math.ceil(player.hp)} / ${player.maxHp}`, hpX + 8, ARENA.wall + 12.5);
 
   // Wave and wraiths left, top centre.
   ctx.textAlign = 'center';
@@ -358,12 +363,13 @@ export function drawHud(ctx, state) {
     ctx.fillRect(ARENA.width - ARENA.wall - 92, ARENA.wall + 64, 90 * (state.comboTimer / 3), 3.5);
   }
 
-  // Dash readiness, bottom left.
+  // Dash readiness, bottom left — inset from the frame like FLAME above,
+  // so the text never touches the glowing border.
   ctx.textAlign = 'left';
   ctx.font = `700 11px ${FONT}`;
   const dashReady = player.dashCooldown <= 0;
   ctx.fillStyle = dashReady ? COLORS.wisp : COLORS.dimText;
-  ctx.fillText(dashReady ? 'DASH READY (Shift / right-click)' : 'DASH …', ARENA.wall + 2, ARENA.height - ARENA.wall - 6);
+  ctx.fillText(dashReady ? 'DASH READY (Shift / right-click)' : 'DASH …', ARENA.wall + 10, ARENA.height - ARENA.wall - 6);
 
   // Boss bar, bottom centre.
   const boss = state.enemies.find((e) => e.kind === 'dreadmaw');
